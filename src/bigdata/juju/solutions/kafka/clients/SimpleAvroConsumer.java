@@ -1,4 +1,4 @@
-package com.kjackal.bundle;
+package bigdata.juju.solutions.kafka.clients;
 
 //https://cwiki.apache.org/confluence/display/KAFKA/Consumer+Group+Example
 
@@ -14,12 +14,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
  
-public class BTKafkaConsumer {
+public class SimpleAvroConsumer {
     private final ConsumerConnector consumer;
     private final String topic;
     private  ExecutorService executor;
  
-    public BTKafkaConsumer(String a_zookeeper, String a_groupId, String a_topic) {
+    public SimpleAvroConsumer(String a_zookeeper, String a_groupId, String a_topic) {
         consumer = kafka.consumer.Consumer.createJavaConsumerConnector(
                 createConsumerConfig(a_zookeeper, a_groupId));
         this.topic = a_topic;
@@ -51,7 +51,7 @@ public class BTKafkaConsumer {
         //
         int threadNumber = 0;
         for (final KafkaStream stream : streams) {
-            executor.submit(new BTConsumerThread(stream, threadNumber));
+            executor.submit(new SimpleAvroConsumerThread(stream, threadNumber));
             threadNumber++;
         }
     }
@@ -60,26 +60,21 @@ public class BTKafkaConsumer {
         Properties props = new Properties();
         props.put("zookeeper.connect", a_zookeeper);
         props.put("group.id", a_groupId);
-        props.put("zookeeper.session.timeout.ms", "400");
-        props.put("zookeeper.sync.time.ms", "200");
+        props.put("zookeeper.session.timeout.ms", "1000");
+        props.put("zookeeper.sync.time.ms", "1200");
         props.put("auto.commit.interval.ms", "1000");
  
         return new ConsumerConfig(props);
     }
  
     public static void main(String[] args) {
-/*      
+      
         String zooKeeper = args[0];
         String groupId = args[1];
         String topic = args[2];
         int threads = Integer.parseInt(args[3]);
-*/
-        String zooKeeper = "10.0.3.59:2181";
-        String groupId = "grpid";
-        String topic = "page_visits4";
-        int threads = Integer.parseInt("3");
 
-        BTKafkaConsumer example = new BTKafkaConsumer(zooKeeper, groupId, topic);
+        SimpleAvroConsumer example = new SimpleAvroConsumer(zooKeeper, groupId, topic);
         example.run(threads);
  
         try {

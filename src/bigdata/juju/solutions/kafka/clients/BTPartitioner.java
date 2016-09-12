@@ -1,4 +1,6 @@
-package com.kjackal.bundle;
+// https://cwiki.apache.org/confluence/display/KAFKA/0.8.0+Producer+Example
+
+package bigdata.juju.solutions.kafka.clients;
 
 import kafka.producer.Partitioner;
 import kafka.utils.VerifiableProperties;

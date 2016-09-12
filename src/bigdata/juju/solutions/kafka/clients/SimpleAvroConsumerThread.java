@@ -1,4 +1,4 @@
-package com.kjackal.bundle;
+package bigdata.juju.solutions.kafka.clients;
  
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;

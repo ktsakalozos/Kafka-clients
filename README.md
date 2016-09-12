@@ -1,1 +1,1 @@
-# Kafka-clients
+# Kafka-clients for Juju BigData Charms

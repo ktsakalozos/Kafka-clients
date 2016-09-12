@@ -1,4 +1,6 @@
-package com.kjackal.bundle;
+// Code from: https://cwiki.apache.org/confluence/display/KAFKA/Consumer+Group+Example
+
+package bigdata.juju.solutions.kafka.clients;
  
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;

@@ -1,4 +1,4 @@
-package com.kjackal.bundle;
+package bigdata.juju.solutions.kafka.clients;
 
 // From http://aseigneurin.github.io/2016/03/04/kafka-spark-avro-producing-and-consuming-avro-messages.html
 
@@ -33,26 +33,34 @@ public class SimpleAvroProducer {
 
 	public static void main(String[] args) throws InterruptedException {
 
+    	for (String arg : args) {
+			if (arg.equals("--help")){
+				help();
+				System.exit(0);
+			}
+		}
+
+        long events = Long.parseLong(args[0]);
+        String brokers = args[1];
+        String topic = args[2];
+
 		Schema.Parser parser = new Schema.Parser();
 		Schema schema = parser.parse(USER_SCHEMA);
 		Injection<GenericRecord, byte[]> recordInjection = GenericAvroCodecs.toBinary(schema);
 
-		long events = 10;
 		Properties props = new Properties();
-		// props.put("metadata.broker.list", "localhost:9092");
-		props.put("metadata.broker.list", "localhost:9092");
+		props.put("metadata.broker.list", brokers);
 		props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 		props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
-		props.put("partitioner.class", "com.kjackal.bundle.BTPartitioner");
 		props.put("request.required.acks", "1");
 
 		ProducerConfig config = new ProducerConfig(props);
 
 		Producer<String, byte[]> producer = new Producer<String, byte[]>(config);
 
-		for (long nEvents = 0; nEvents < events; nEvents++) {
+		for (long event = 0; event < events; event++) {
 			GenericData.Record avroRecord = new GenericData.Record(schema);
-			avroRecord.put("Entity", "Shop " + nEvents); 
+			avroRecord.put("Entity", "Shop " + event); 
 			avroRecord.put("Country", "GR"); 
 			avroRecord.put("Address", "Right Here"); 
 			avroRecord.put("PostCode", "123456");
@@ -63,11 +71,18 @@ public class SimpleAvroProducer {
 
 			byte[] bytes = recordInjection.apply(avroRecord);
 
-			KeyedMessage<String, byte[]> data = new KeyedMessage<String, byte[]>("avrotopic", bytes);
+			KeyedMessage<String, byte[]> data = new KeyedMessage<String, byte[]>(topic, bytes);
 			producer.send(data);
 
 		}
 		producer.close();
 
+	}
+	
+	private static void help() {
+		System.out.println("Put string messages to an Apache Kafka queue. Arguments:");
+		System.out.println("Arg 1: number of messages to send");
+		System.out.println("Arg 2: broker list, eg 183.112.213.250:9092");
+		System.out.println("Arg 3: topic");
 	}
 }

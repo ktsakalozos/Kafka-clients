@@ -1,6 +1,6 @@
-package com.kjackal.bundle;
+// Code from: https://cwiki.apache.org/confluence/display/KAFKA/Consumer+Group+Example
 
-//https://cwiki.apache.org/confluence/display/KAFKA/Consumer+Group+Example
+package bigdata.juju.solutions.kafka.clients;
 
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.KafkaStream;
@@ -14,12 +14,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
  
-public class SimpleAvroConsumer {
+public class BTKafkaConsumer {
     private final ConsumerConnector consumer;
     private final String topic;
     private  ExecutorService executor;
  
-    public SimpleAvroConsumer(String a_zookeeper, String a_groupId, String a_topic) {
+    public BTKafkaConsumer(String a_zookeeper, String a_groupId, String a_topic) {
         consumer = kafka.consumer.Consumer.createJavaConsumerConnector(
                 createConsumerConfig(a_zookeeper, a_groupId));
         this.topic = a_topic;
@@ -51,7 +51,7 @@ public class SimpleAvroConsumer {
         //
         int threadNumber = 0;
         for (final KafkaStream stream : streams) {
-            executor.submit(new SimpleAvroConsumerThread(stream, threadNumber));
+            executor.submit(new BTConsumerThread(stream, threadNumber));
             threadNumber++;
         }
     }
@@ -60,7 +60,7 @@ public class SimpleAvroConsumer {
         Properties props = new Properties();
         props.put("zookeeper.connect", a_zookeeper);
         props.put("group.id", a_groupId);
-        props.put("zookeeper.session.timeout.ms", "400");
+        props.put("zookeeper.session.timeout.ms", "4000");
         props.put("zookeeper.sync.time.ms", "200");
         props.put("auto.commit.interval.ms", "1000");
  
@@ -68,18 +68,20 @@ public class SimpleAvroConsumer {
     }
  
     public static void main(String[] args) {
-/*      
+     
+    	for (String arg : args) {
+			if (arg.equals("--help")){
+				help();
+				System.exit(0);
+			}
+		}
+    	
         String zooKeeper = args[0];
         String groupId = args[1];
         String topic = args[2];
         int threads = Integer.parseInt(args[3]);
-*/
-        String zooKeeper = "localhost:2181";
-        String groupId = "grpid";
-        String topic = "avrotopic";
-        int threads = Integer.parseInt("3");
 
-        SimpleAvroConsumer example = new SimpleAvroConsumer(zooKeeper, groupId, topic);
+        BTKafkaConsumer example = new BTKafkaConsumer(zooKeeper, groupId, topic);
         example.run(threads);
  
         try {
@@ -89,4 +91,12 @@ public class SimpleAvroConsumer {
         }
         example.shutdown();
     }
+
+	private static void help() {
+		System.out.println("Consume from an Apache Kafka queue. Arguments:");
+		System.out.println("Arg 1: zookeeper connection string, eg 183.112.213.250:2181");
+		System.out.println("Arg 2: group ID");
+		System.out.println("Arg 3: kafka topic to read from");
+		System.out.println("Arg 4: number of reader threads");
+	}
 }
