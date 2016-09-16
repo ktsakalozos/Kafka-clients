@@ -2,6 +2,8 @@ package bigdata.juju.solutions.kafka.clients;
 
 import com.twitter.bijection.Injection;
 import com.twitter.bijection.avro.GenericAvroCodecs;
+
+import kafka.cluster.Broker;
 import kafka.serializer.DefaultDecoder;
 import kafka.serializer.StringDecoder;
 import scala.Tuple2;
@@ -17,21 +19,44 @@ import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.api.java.JavaPairInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka.KafkaUtils;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooKeeper;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class SparkAvroConsumer {
 
+	public static String getConnectionString(String zkconnsction) throws IOException, KeeperException, InterruptedException{
+        ZooKeeper zk = new ZooKeeper(zkconnsction, 10000, null);
+        List<String> brokerList = new ArrayList<String>();
 
-    public static void main(String[] args) {
-        String brokers = args[0];
+        List<String> ids = zk.getChildren("/brokers/ids", false);
+        for (String id : ids) {
+            String brokerInfo = new String(zk.getData("/brokers/ids/" + id, false, null));
+            Broker broker = Broker.createBroker(Integer.valueOf(id), brokerInfo);
+            if (broker != null) {
+                brokerList.add(broker.getConnectionString());
+            }
+            System.out.println(id + ": " + brokerInfo);
+        }
+
+        return String.join(",", brokerList);
+	}
+
+	
+    public static void main(String[] args) throws IOException, KeeperException, InterruptedException {
+    	    	
+        String brokers = getConnectionString(args[0]);
         String topic = args[1];
-    	
+        
         SparkConf conf = new SparkConf()
-                .setAppName("kafka-sandbox");
+                .setAppName("kafka-sandbox").set("spark.local.dir", "/tmp/spark-temp");;
         JavaSparkContext sc = new JavaSparkContext(conf);
         JavaStreamingContext ssc = new JavaStreamingContext(sc, new Duration(2000));
 
@@ -47,20 +72,18 @@ public class SparkAvroConsumer {
 			public Void call(JavaPairRDD<String, byte[]> rdd) throws Exception {
 			    rdd.foreach(new VoidFunction<Tuple2<String, byte[]>>() {
 					@Override
-					public void call(Tuple2<String, byte[]> avroRecord) throws Exception {
+					public void call(Tuple2<String, byte[]> avroRecord) throws Exception {						
 					    Schema.Parser parser = new Schema.Parser();
 					    Schema schema = parser.parse(SimpleAvroProducer.USER_SCHEMA);
 					    Injection<GenericRecord, byte[]> recordInjection = GenericAvroCodecs.toBinary(schema);
 					    GenericRecord record = recordInjection.invert(avroRecord._2).get();
-
-			            System.out.println("Entity = " + record.get("Entity")
-			            	+ ", Amount = " + record.get("Amount"));
+						System.out.println("Entity = " + record.get("Entity")
+						    			+ ", Amount = " + record.get("Amount") + "\n");
 					}
 				});
 				return null;
 			}
-		});
-
+		});	
         ssc.start();
         ssc.awaitTermination();
     }
