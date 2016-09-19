@@ -52,7 +52,7 @@ public class SimpleAvroProducer {
 		props.put("metadata.broker.list", brokers);
 		props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 		props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
-		props.put("request.required.acks", "1");
+		props.put("request.required.acks", "0");
 
 		ProducerConfig config = new ProducerConfig(props);
 

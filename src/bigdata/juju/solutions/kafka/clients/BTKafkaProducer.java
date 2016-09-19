@@ -39,7 +39,7 @@ public class BTKafkaProducer {
         props.put("metadata.broker.list", brokers);
         props.put("serializer.class", "kafka.serializer.StringEncoder");
         props.put("partitioner.class", "bigdata.juju.solutions.kafka.clients.BTPartitioner");
-        props.put("request.required.acks", "1");
+        props.put("request.required.acks", "0");
  
         ProducerConfig config = new ProducerConfig(props);
  
