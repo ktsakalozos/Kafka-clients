@@ -53,6 +53,19 @@
 			<artifactId>spark-streaming-kafka_2.10</artifactId>
 			<version>1.5.2</version>
 		</dependency>
+		
+<dependency>
+    <groupId>com.datastax.spark</groupId>
+    <artifactId>spark-cassandra-connector_2.10</artifactId>
+    <version>1.5.1</version>
+</dependency>
+<dependency>
+    <groupId>com.datastax.spark</groupId>
+    <artifactId>spark-cassandra-connector-java_2.10</artifactId>
+    <version>1.5.1</version>
+</dependency>
+		
+		
 	</dependencies>
 	<build>
 		<plugins>
@@ -64,7 +77,6 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
-
 				</configuration>
 				<executions>
 					<execution>
